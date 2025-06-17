@@ -211,5 +211,53 @@
         }
     </script>
   </div>
+  
+  <!-- Firebase Tracking Code -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAHvMT4yySEg8SKCKi-4b8VgicxlmNGio0",
+      authDomain: "the-bw-v19.firebaseapp.com",
+      databaseURL: "https://the-bw-v19-default-rtdb.firebaseio.com",
+      projectId: "the-bw-v19",
+      storageBucket: "the-bw-v19.firebasestorage.app",
+      messagingSenderId: "579598989862",
+      appId: "1:579598989862:web:d856c22f1e1e640a9bc4e7"
+    };
+
+    const app = firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    const sessionData = {
+      timestamp: new Date().toISOString(),
+      page: window.location.href,
+      userAgent: navigator.userAgent,
+      duration: 0,
+      ip: "pending",
+      actions: []
+    };
+
+    const startTime = Date.now();
+
+    document.addEventListener('click', function(e) {
+      sessionData.actions.push({
+        type: 'click',
+        element: e.target.tagName,
+        text: e.target.innerText.substring(0, 30),
+        time: new Date().toISOString()
+      });
+    });
+
+    fetch('https://api.ipify.org?format=json')
+      .then(response => response.json())
+      .then(data => sessionData.ip = data.ip)
+      .catch(() => sessionData.ip = "unknown");
+
+    window.addEventListener('beforeunload', function() {
+      sessionData.duration = Date.now() - startTime;
+      database.ref('visitors/' + Date.now()).set(sessionData);
+    });
+  </script>
  </body>
 </html>
